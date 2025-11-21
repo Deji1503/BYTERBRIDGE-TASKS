@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - API Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        #viewBtn {
+            background: #4CAF50;
+        }
+
+        #viewBtn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        #addBtn {
+            background: #2196F3;
+        }
+
+        #addBtn:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        #deleteBtn {
+            background: #f44336;
+        }
+
+        #deleteBtn:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .input-group.active {
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .submit-btn {
+            background: #2196F3;
+            width: 100%;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-item.completed {
+            border-left-color: #4CAF50;
+            opacity: 0.7;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .task-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status.completed {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status.pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .delete-input-group {
+            display: none;
+        }
+
+        .delete-input-group.active {
+            display: block;
+        }
+
+        .auth-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .auth-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .auth-status-text {
+            font-weight: 600;
+        }
+
+        .auth-status.authenticated .auth-status-text {
+            color: #4CAF50;
+        }
+
+        .auth-status.unauthenticated .auth-status-text {
+            color: #f44336;
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .login-form.active {
+            display: block;
+        }
+
+        .login-form input {
+            margin-bottom: 10px;
+        }
+
+        #logoutBtn, #testWithoutAuthBtn {
+            padding: 10px 20px;
+            font-size: 14px;
+            min-width: auto;
+        }
+
+        #testWithoutAuthBtn {
+            background: #ff9800;
+        }
+
+        #testWithoutAuthBtn:hover {
+            background: #f57c00;
+        }
+
+        .credentials-hint {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 5px;
+            border-left: 3px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Task Manager</h1>
+        
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <div class="auth-status unauthenticated" id="authStatus">
+                <div>
+                    <span class="auth-status-text">🔒 Not Authenticated</span>
+                </div>
+                <button id="logoutBtn" style="display: none;" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="login-form active" id="loginForm">
+                <h3 style="margin-bottom: 15px;">Login Required</h3>
+                <input type="text" id="username" placeholder="Username" value="admin">
+                <input type="password" id="password" placeholder="Password" value="password123">
+                <button class="submit-btn" onclick="login()">Login</button>
+                <div class="credentials-hint">
+                    <strong>Demo Credentials:</strong> username: <code>admin</code>, password: <code>password123</code>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="viewBtn">View Tasks</button>
+            <button id="addBtn">Add Task</button>
+            <button id="deleteBtn">Delete Task</button>
+            <button id="testWithoutAuthBtn" onclick="testWithoutAuth()">Test Without Auth</button>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="input-group" id="addTaskForm">
+            <input type="text" id="taskTitle" placeholder="Enter task title...">
+            <label style="display: flex; align-items: center; margin-bottom: 10px;">
+                <input type="checkbox" id="taskCompleted" style="width: auto; margin-right: 10px;">
+                <span>Mark as completed</span>
+            </label>
+            <button class="submit-btn" onclick="addTask()">Add Task</button>
+        </div>
+
+        <!-- Delete Task Form -->
+        <div class="input-group delete-input-group" id="deleteTaskForm">
+            <input type="number" id="taskId" placeholder="Enter task ID to delete...">
+            <button class="submit-btn" onclick="deleteTask()" style="background: #f44336;">Delete Task</button>
+        </div>
+
+        <div class="results" id="results">
+            <h2>Results</h2>
+            <p style="color: #666;">Click a button above to interact with the API.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
+        // Check authentication status on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+        });
+
+        // Get stored token
+        function getToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        // Get stored API key
+        function getApiKey() {
+            return localStorage.getItem('apiKey');
+        }
+
+        // Check authentication status
+        function checkAuthStatus() {
+            const token = getToken();
+            const authStatus = document.getElementById('authStatus');
+            const loginForm = document.getElementById('loginForm');
+            const logoutBtn = document.querySelector('#logoutBtn');
+            
+            if (token) {
+                authStatus.classList.remove('unauthenticated');
+                authStatus.classList.add('authenticated');
+                authStatus.querySelector('.auth-status-text').textContent = '✅ Authenticated';
+                loginForm.classList.remove('active');
+                logoutBtn.style.display = 'block';
+            } else {
+                authStatus.classList.remove('authenticated');
+                authStatus.classList.add('unauthenticated');
+                authStatus.querySelector('.auth-status-text').textContent = '🔒 Not Authenticated';
+                loginForm.classList.add('active');
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        // Login function
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            if (!username || !password) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">Please enter both username and password.</div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response. Make sure the server is running on port 3000. Status: ${response.status}`);
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Login failed');
+                }
+
+                const data = await response.json();
+                
+                // Store token and API key
+                localStorage.setItem('authToken', data.token);
+                if (data.apiKey) {
+                    localStorage.setItem('apiKey', data.apiKey);
+                }
+
+                resultsDiv.innerHTML = `
+                    <h2>Success</h2>
+                    <div class="message success">
+                        Login successful! You can now access the API.
+                        <br><small>Token stored in localStorage</small>
+                    </div>
+                `;
+
+                checkAuthStatus();
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">
+                        Login failed: ${error.message}
+                        <br><small>Make sure the server is running: <code>npm start</code></small>
+                    </div>
+                `;
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('apiKey');
+            checkAuthStatus();
+            document.getElementById('results').innerHTML = `
+                <h2>Logged Out</h2>
+                <p style="color: #666;">You have been logged out. Please login again to access the API.</p>
+            `;
+        }
+
+        // Get authentication headers
+        function getAuthHeaders() {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            const token = getToken();
+            const apiKey = getApiKey();
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            } else if (apiKey) {
+                headers['x-api-key'] = apiKey;
+            }
+            
+            return headers;
+        }
+
+        // Test without authentication
+        async function testWithoutAuth() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Testing without authentication...</h2>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // Intentionally not including Authorization header
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    resultsDiv.innerHTML = `
+                        <h2>Test Result: Access Denied ✅</h2>
+                        <div class="message success">
+                            <strong>Expected behavior:</strong> The API correctly denied access without authentication.
+                            <br><strong>Status:</strong> ${response.status}
+                            <br><strong>Error:</strong> ${errorData.error}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <h2>Test Result: Security Issue ⚠️</h2>
+                        <div class="message error">
+                            The API should have denied access but it didn't!
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h2>Test Result</h2>
+                    <div class="message error">
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Button event listeners
+        document.getElementById('viewBtn').addEventListener('click', viewTasks);
+        document.getElementById('addBtn').addEventListener('click', showAddForm);
+        document.getElementById('deleteBtn').addEventListener('click', showDeleteForm);
+
+        // View Tasks function
+        async function viewTasks() {
+            const token = getToken();
+            if (!token && !getApiKey()) {
+                document.getElementById('results').innerHTML = `
+                    <h2>Authentication Required</h2>
+                    <div class="message error">
+                        Please login first to view tasks.
+                    </div>
+                `;
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Loading tasks...</h2>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const tasks = await response.json();
+                displayTasks(tasks);
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">
+                        Failed to fetch tasks: ${error.message}
+                        <br><small>Make sure you are logged in and the server is running on port 3000</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Display tasks
+        function displayTasks(tasks) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (tasks.length === 0) {
+                resultsDiv.innerHTML = `
+                    <h2>Tasks</h2>
+                    <p style="color: #666;">No tasks found.</p>
+                `;
+                return;
+            }
+
+            let html = '<h2>Tasks</h2><ul class="task-list">';
+            
+            tasks.forEach(task => {
+                const statusClass = task.completed ? 'completed' : 'pending';
+                const statusText = task.completed ? 'Completed' : 'Pending';
+                html += `
+                    <li class="task-item ${task.completed ? 'completed' : ''}">
+                        <div class="task-info">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">
+                                ID: ${task.id} | 
+                                <span class="status ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            resultsDiv.innerHTML = html;
+        }
+
+        // Show Add Task Form
+        function showAddForm() {
+            document.getElementById('addTaskForm').classList.add('active');
+            document.getElementById('deleteTaskForm').classList.remove('active');
+            document.getElementById('taskTitle').focus();
+        }
+
+        // Add Task function
+        async function addTask() {
+            const token = getToken();
+            if (!token && !getApiKey()) {
+                document.getElementById('results').innerHTML = `
+                    <h2>Authentication Required</h2>
+                    <div class="message error">
+                        Please login first to add tasks.
+                    </div>
+                `;
+                return;
+            }
+
+            const title = document.getElementById('taskTitle').value.trim();
+            const completed = document.getElementById('taskCompleted').checked;
+            const resultsDiv = document.getElementById('results');
+
+            if (!title) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">Please enter a task title.</div>
+                `;
+                return;
+            }
+
+            resultsDiv.innerHTML = '<h2>Adding task...</h2>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ title, completed })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const newTask = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <h2>Success</h2>
+                    <div class="message success">
+                        Task added successfully!
+                        <br><strong>ID:</strong> ${newTask.id}
+                        <br><strong>Title:</strong> ${newTask.title}
+                        <br><strong>Status:</strong> ${newTask.completed ? 'Completed' : 'Pending'}
+                    </div>
+                `;
+
+                // Clear form
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskCompleted').checked = false;
+                
+                // Auto-refresh task list
+                setTimeout(viewTasks, 1500);
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">
+                        Failed to add task: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Show Delete Task Form
+        function showDeleteForm() {
+            document.getElementById('deleteTaskForm').classList.add('active');
+            document.getElementById('addTaskForm').classList.remove('active');
+            document.getElementById('taskId').focus();
+        }
+
+        // Delete Task function
+        async function deleteTask() {
+            const token = getToken();
+            if (!token && !getApiKey()) {
+                document.getElementById('results').innerHTML = `
+                    <h2>Authentication Required</h2>
+                    <div class="message error">
+                        Please login first to delete tasks.
+                    </div>
+                `;
+                return;
+            }
+
+            const taskId = document.getElementById('taskId').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            if (!taskId) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">Please enter a task ID.</div>
+                `;
+                return;
+            }
+
+            resultsDiv.innerHTML = '<h2>Deleting task...</h2>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <h2>Success</h2>
+                    <div class="message success">
+                        ${result.message}
+                        <br><strong>Deleted Task:</strong> ${result.task.title} (ID: ${result.task.id})
+                    </div>
+                `;
+
+                // Clear form
+                document.getElementById('taskId').value = '';
+                
+                // Auto-refresh task list
+                setTimeout(viewTasks, 1500);
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <div class="message error">
+                        Failed to delete task: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Allow Enter key to submit forms
+        document.getElementById('taskTitle').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        document.getElementById('taskId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                deleteTask();
+            }
+        });
+
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>
